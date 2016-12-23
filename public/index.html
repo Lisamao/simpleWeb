@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <head>
+         <title>Event Registration</title>
+    <style>
+         body {background-color: powderblue;  text-align: center}
+         h2   {color: blue;}
+         p    {color: red;}
+         #txtCaptcha {border: none; font-weight: bold; background-color: powderblue; color: red; text-align: center; }
+         #txtCompare {font-weight: bold; text-align: center; }
+    </style>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.15.0/jquery.validate.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.15.0/additional-methods.min.js"></script>
+
+        <script language="javascript" charset="utf-8">
+          /* Function to Generat Captcha */
+         function GenerateCaptcha() {
+             var chr1 = Math.ceil(Math.random() * 9)+ '';
+             var chr2 = Math.ceil(Math.random() * 9)+ '';
+             var chr3 = Math.ceil(Math.random() * 9)+ '';
+             var chr4 = Math.ceil(Math.random() * 9)+ '';
+             var chr5 = Math.ceil(Math.random() * 9)+ '';
+             var chr6 = Math.ceil(Math.random() * 9)+ '';
+             var chr7 = Math.ceil(Math.random() * 9)+ '';
+             var chr8 = Math.ceil(Math.random() * 9)+ '';
+
+             var captchaCode = chr1 + chr2 + chr3 + chr4 +  chr5 + chr6 +  chr7 + chr8;
+             document.getElementById("txtCaptcha").value = captchaCode;
+         }
+         </script>
+    </head>
+
+    <body onload="GenerateCaptcha();">
+        <div>
+            <h2>Event Registration Form</h2>
+            <img src="curious.jpg" alt="Smiley face" height="100" width="100">
+            <br><br>
+
+        <form  id="register" action = "http://localhost:3000/event" method = "POST" >
+        <div>
+             First Name *: <input type = "text" name = "fname"  id = "fname" class="valueReset">  <br>
+             Last Name *: <input type = "text" name = "lname"  id = "lname" class="valueReset">  <br>
+             Email Address *: <input type = "text" name = "email" id ="email" class="valueReset"> <br>
+             Company Name: <input type = "text" name = "company" id ="company" class="valueReset"> <br>
+             Mobile Phone: <input type = "text" name = "phone" id ="phone" class="valueReset"> <br>
+             where do you hear from us *: <select name="source" id ="source" class="valueReset" onChange="check()">
+                                          <option disabled selected value></option>
+                                          <option value="Google">Google</option>
+                                          <option value="Newswebsite">News website</option>
+                                          <option value="Friends">Friends</option>
+                                          <option value="Others">Others</option>
+                                          </select> <br>
+             <div class="" id="divnewsweb">
+             Please select which news website *: <select name="newsweb" id = "newsweb" class="valueReset">
+                                          <option disabled selected value></option>
+                                          <option value="Washingtonpost.com">Washingtonpost.com</option>
+                                          <option value="usatoday.com">usatoday.com</option>
+                                          <option value="NewYorkTimes.com">NewYorkTimes.com</option>                                  </select>
+             </div>
+             Event location:  <select name="location" id ="location" class="valueReset">
+                                      <option disabled selected value></option>
+                                      </select> <br>
+
+             <input type="checkbox" name="term" value="agreed" id = "term" unchecked class="valueReset">I agreed to the term and conditions<br><br>
+         </div>
+
+            <div class="" id="Captcha">
+             Captcha verfication:
+             <input id="txtCaptcha" name="txtCaptcha" />
+             <input type="button" id="btnrefresh" value="Refresh to get new number" onclick="GenerateCaptcha();" /><br>
+             Please input the number which is shown above in red:
+             <input class="valueReset" id="txtCompare" name="txtCompare" /><br><br>
+             </div>
+
+             <input type="Submit" value="Submit" id = "submit">
+             <input type="button"  value="Reset" id = "reset" onclick = "removeVa()" />
+      </form>
+      </div>
+
+
+      <script language="javascript" charset="utf-8">
+
+      // this function is used to check the value of the "source" dropdown list
+      function check() {
+          var dropdown = document.getElementById("source");
+          var current_value = dropdown.options[dropdown.selectedIndex].value;
+
+          if (current_value == "Newswebsite") {
+              document.getElementById("divnewsweb").style.display = "block";
+             }
+          else {
+               document.getElementById('divnewsweb').style.display ='none';
+          }
+      }
+
+      // this is function is used to hide the newsweb dropdown list, reset value
+      // and remove the validation error info when click the reset button
+      function removeVa() {
+          document.getElementById('divnewsweb').style.display ='none';
+          validator.resetForm();
+          $('.valueReset').val('');
+          $('#term').attr('checked', false);
+      }
+
+
+      $(document).ready( function() {
+          $('#divnewsweb').hide();
+          // consume the rest web service about all the states of U.S.
+          $.ajax({
+                  url: "http://services.groupkt.com/state/get/USA/all"
+                  }).then(function(data) {
+                     var n = data.RestResponse.result.length;
+                     var sel = document.getElementById('location');
+                     for (var i= 0; i <n; i++) {
+                         var opt = document.createElement('option')
+                         opt.innerHTML = data.RestResponse.result[i]["name"];
+                         opt.value = data.RestResponse.result[i]["abbr"];
+                         sel.appendChild(opt);
+                         }
+                      });
+
+         // validate the input
+          validator = $('#register').validate({
+              rules: {fname: "required",
+                      lname: "required",
+                      email: {required: true, email:true},
+                      phone: {phoneUS: true},
+                      source: "required",
+                      newsweb: "required",
+                      location: "required",
+                      term: "required",
+                      txtCompare: {equalTo: "#txtCaptcha"}
+                     }
+          });
+     })
+
+    </script>
+    </body>
+</html>
